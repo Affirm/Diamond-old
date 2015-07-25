@@ -42,7 +42,7 @@ class TestCeleryFlowerCollector(CollectorTestCase):
     @run_only_if_requests_is_available
     @patch('celeryflower.requests.get')
     @patch.object(Collector, 'publish')
-    def test_should_publish_nested_keys(self, publish_mock, requests_get):
+    def test_should_publish_flower_metrics(self, publish_mock, requests_get):
         import requests
         worker_data = requests.Response()
         worker_data.status_code = 200
@@ -73,7 +73,7 @@ class TestCeleryFlowerCollector(CollectorTestCase):
         requests_get.return_value = worker_data
         self.collector.collect()
         url = urlparse.urljoin(self.collector.config['url'], '/api/workers')
-        requests_get.assert_called_once_with(url, timeout=5)
+        requests_get.assert_called_once_with(url, auth=None, timeout=5)
 
         metrics = {
             'worker.worker-1.status': 1,

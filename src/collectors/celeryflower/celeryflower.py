@@ -27,6 +27,7 @@ class CeleryFlowerCollector(diamond.collector.Collector):
             'url':      'Celery flower URI',
             'user':     'Username for connecting to flower',
             'passwd':   'Password for connecting to flower',
+            'timeout':  'Timeout (secs) for connecting to flower',
         })
         return config_help
 
@@ -40,13 +41,21 @@ class CeleryFlowerCollector(diamond.collector.Collector):
             'user':         None,
             'passwd':       None,
             'path':         'flower',
+            'timeout':      5,
         })
         return config
 
     def collect(self):
         # Get the json
         url = urlparse.urljoin(self.config['url'], '/api/workers')
-        response = requests.get(url, timeout=5)
+
+        if self.config['user'] is not None and \
+                self.config['passwd'] is not None:
+            auth = (self.config['user'], self.config['passwd'])
+        else:
+            auth = None
+
+        response = requests.get(url, auth=auth, timeout=self.config['timeout'])
 
         try:
             response.raise_for_status()
